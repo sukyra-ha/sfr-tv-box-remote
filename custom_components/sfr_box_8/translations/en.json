@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add an SFR Box 8 TV",
+        "description": "Enter the address that Home Assistant can reach.",
+        "data": {
+          "name": "Name",
+          "host": "IP address or DNS name",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not read the decoder status. Check the address, port and network access.",
+      "invalid_host": "Enter an IP address or DNS name.",
+      "invalid_name": "Enter a name for the decoder."
+    },
+    "abort": {
+      "already_configured": "A decoder is already configured at this address and port.",
+      "already_in_progress": "This decoder is already being configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Live channel and favorites",
+        "description": "Enter one channel per line, for example 5 or 5 = Channel name.",
+        "data": {
+          "channels": "Favorite channels",
+          "upnp_url": "UPnP address for the live channel (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_channels": "Enter a one- to four-digit channel number per line, optionally followed by a name. Check for duplicates.",
+      "invalid_upnp_url": "Enter the UPnP control address of the configured decoder."
+    }
+  }
+}

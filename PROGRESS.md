@@ -1,5 +1,11 @@
 # PROGRESS.md : État d'avancement du projet
 
+## Bêta du fork Home Assistant
+
+- Intégration STB8 et cartes TV préparées pour HACS v0.1.0.
+- Prochaine validation matérielle sur un Home Assistant Green physique.
+- Les étapes du projet d’origine ci-dessous restent à titre de référence.
+
 ## 📊 État Global
 - **Phase actuelle** : Phase 2 (Implémentation des drivers)
 - **Dernier Step validé** : Phase 2.2 (sfr_tv_box_remote.py)

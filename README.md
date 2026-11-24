@@ -1,175 +1,77 @@
-[![CI Status](https://github.com/GehDoc/sfr-tv-box-remote/workflows/CI/badge.svg)](https://github.com/GehDoc/sfr-tv-box-remote/actions?query=workflow%3ACI)
-[![Codecov](https://codecov.io/gh/GehDoc/sfr-tv-box-remote/branch/main/graph/badge.svg)](https://codecov.io/gh/GehDoc/sfr-tv-box-remote)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/GehDoc/sfr-tv-box-remote)](https://github.com/GehDoc/sfr-tv-box-remote/releases)
+# SFR Box 8 TV pour Home Assistant
 
-# SFR TV Box Remote (Unified WebSocket Driver)
+Intégration communautaire pour piloter un décodeur **SFR Box 8 TV (STB8)** sur le réseau local. Elle crée un lecteur multimédia et une télécommande pour chaque décodeur configuré.
 
-Pilotage professionnel "Full IP" des décodeurs SFR (V8, V7, LaBox) pour Home Assistant. Ce projet utilise un transport WebSocket bidirectionnel unique, identifié par reverse-engineering de l'APK SFR TV, pour toutes les générations de matériel.
+**Première bêta publique · v0.1.0** · Home Assistant Core **2026.10.4** ou ultérieur.
 
-## 1. Architecture du Projet
+## Fonctionnalités
 
-Le projet est organisé en monorepo pour garantir la cohérence entre la bibliothèque de pilotage et l'intégration domotique.
+- Allumage et mise en veille avec lecture préalable de l’état du décodeur.
+- Télécommande avec saisie numérique, chaîne précédente ou suivante, navigation, volume et muet.
+- Sélection d’une chaîne par son numéro. Les favoris peuvent être nommés et modifiés.
+- Affichage facultatif du nom de la chaîne en direct, y compris après un changement avec la télécommande physique. Le décodeur fournit le nom, et le relevé se fait toutes les 20 secondes.
+- Plusieurs décodeurs configurables depuis l’interface de Home Assistant.
 
-### A. Librairie Core (`sfr_tv_box_core/`)
+Les boutons de volume envoient les touches au décodeur. Les réponses vérifiées ne fournissent pas le niveau sonore. L’effet du HDMI-CEC sur le téléviseur reste à vérifier.
 
-Bibliothèque Python 3.12+ autonome (Délivrables 1 & 2).
+## Installer avec HACS
 
-- **Transport** : Client WebSocket asynchrone unique pour toutes les box.
-- **Stratégie de Commandes (Payloads Polymorphiques)** :
-  - `base_driver.py` : Interface de base gérant la session WebSocket, la reconnexion et un système générique pour l'envoi et la réception de commandes (ex: `send_command(command, **params)`). Chaque driver spécialisé implémentera la liste de ses commandes disponibles (`get_available_commands()`).
-  - `stb8_driver.py` : Définit et implémente les commandes spécifiques à la Box TV 8 (ex: commandes JSON avec paramètres).
-  - `stb7_driver.py` : Définit et implémente les commandes spécifiques à la Box TV 7.
-  - `labox_driver.py` : Définit et implémente les commandes spécifiques à LaBox.
-  - `constants.py` : Contient des constantes partagées par la librairie, incluant potentiellement les valeurs de certains paramètres de commande (ex: KeyCodes utilisés par une commande `send_key`).
-- **Discovery** : Listener Avahi (`discovery.py`) pour l'identification de la version et l'attribution du bon driver.
-- **CLI** : Outil de pilotage en ligne de commande (`sfr_tv_box_remote.py`).
+1. Installez [HACS](https://www.hacs.xyz/docs/use/download/download/) si nécessaire, puis ouvrez **HACS → ⋮ → Dépôts personnalisés**.
+2. Ajoutez `https://github.com/sukyra-ha/sfr-tv-box-remote` avec la catégorie **Intégration**.
+3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.0** si le choix de version apparaît. Redémarrez Home Assistant.
+4. Dans **Paramètres → Appareils et services → Ajouter une intégration**, choisissez **SFR Box 8 TV**. Saisissez l’adresse IP ou le nom DNS du décodeur, ainsi que le port **7682** par défaut.
 
-### B. Intégration Home Assistant (`custom_components/sfr_tv_box_remote/`)
+Le nom par défaut **SFR Box 8** donne habituellement `media_player.sfr_box_8` et `remote.sfr_box_8`. Vérifiez les identifiants générés avant de réutiliser les exemples. Pour un second décodeur, ajoutez une nouvelle entrée.
 
-Composant personnalisé prêt pour HACS (Délivrables 3 & 5).
+## Installation manuelle
 
-- **Mode** : `local_push`. Le WebSocket permet une remontée d'état instantanée (changement de chaîne, volume, power) vers HA sans interrogation (polling).
-- **Entités** : `media_player.py` et `remote.py`.
+Téléchargez le paquet de la [bêta v0.1.0](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.0). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
 
-### C. Ressources et Qualité
+## Afficher la chaîne en direct
 
-- **`ui/`** : Templates YAML pour l'interface Lovelace (Délivrable 4).
-- **`tests/`** : Suite de tests unitaires et mocks WebSocket (Pytest).
-- **`.github/`** : Workflows pour la Continuous Integration (CI).
+Pour activer cette option, renseignez l’adresse de contrôle UPnP du service `urn:neufboxtv-org:service:Resources:1`, généralement sur le port **49153**.
 
-## 2. Spécifications Techniques
+1. Depuis un ordinateur sur le même réseau local que le décodeur, lancez `python3 scripts/trouver_upnp.py 192.0.2.10` avec Python 3.9 ou ultérieur. Remplacez l’adresse d’exemple par l’adresse du décodeur configurée dans Home Assistant. Sur Windows, `py -3` peut remplacer `python3`.
+2. Dans **Paramètres → Appareils et services → SFR Box 8 TV → Configurer**, collez le résultat dans **Adresse UPnP pour la chaîne en cours**.
 
-- **Source de Vérité** : Protocoles et KeyCodes extraits du code Kotlin/Java de l'APK SFR TV.
-- **Langage** : Python 3.12 (Asynchrone via `asyncio`).
-- **Robustesse** : Gestion de la reconnexion avec backoff exponentiel et monitoring de la connexion (Heartbeat).
+Le nom de la chaîne apparaît dans le détail du lecteur et dans l’attribut `media_title`. En veille ou si aucun flux en direct n’est identifié, le titre est vide. Si la recherche UPnP échoue depuis un conteneur ou via un VPN, lancez-la sur une machine directement connectée au réseau du décodeur.
 
-## 3. Structure du Repository
+## Installer les deux cartes TV
 
-Le projet suit une architecture Monorepo stricte séparant la librairie Core de l'intégration Home Assistant.
+Les cartes sont fournies dans ce dépôt et s’installent en complément de l’intégration.
 
-Pour le détail complet de l'arborescence et les conventions de développement, veuillez vous référer au fichier [AGENTS.md](./AGENTS.md).
+1. Copiez `ui/www/sfr-tv/` dans le dossier `www/` de Home Assistant. Redémarrez si vous venez de créer `www/`.
+2. Ouvrez **Paramètres → Tableaux de bord → ⋮ → Ressources** et ajoutez `/local/sfr-tv/cartes-sfr.js?v=2` comme **Module JavaScript**. Rechargez la page.
+3. Dans une vue de votre choix, ajoutez **Télécommande SFR** et **Favoris SFR** depuis le sélecteur de cartes. Pour créer un tableau de bord dédié, collez le contenu de [`ui/tv.yaml`](ui/tv.yaml) dans l’éditeur de configuration brute d’un nouveau tableau de bord vierge.
+4. Dans les deux cartes, adaptez `entity` si nécessaire. Dans la télécommande, adaptez aussi `remote`. Modifiez la carte **Chaînes favorites** et choisissez **Ajouter un raccourci** pour associer un nom à un numéro.
 
-## 4. Utilitaires
+Sur le pavé, saisissez par exemple **99**, puis appuyez sur **OK**. Le favori fourni, **Guadeloupe 1ère · Canal 5**, est à adapter à votre grille.
 
-### Script de Découverte
+## Automatisations
 
-Ce projet inclut un utilitaire en ligne de commande pour découvrir les box SFR sur votre réseau local. Il est utile pour tester le mécanisme de découverte ou trouver l'adresse IP de votre box.
+L’action suivante réveille le décodeur si nécessaire, puis demande la chaîne 5.
 
-**Emplacement :** `scripts/run_discovery.py`
-
-**Utilisation :**
-
-Pour exécuter le script, lancez la commande suivante depuis la racine du répertoire du projet :
-
-```bash
-python scripts/run_discovery.py
+```yaml
+action: media_player.play_media
+target:
+  entity_id: media_player.sfr_box_8
+data:
+  media_content_type: channel
+  media_content_id: "5"
 ```
 
-Le script recherchera les box pendant 10 secondes par défaut.
+Pour des appuis de télécommande, utilisez `remote.send_command` avec une liste de touches, par exemple `["CHAN_UP"]`, `["VOL_DOWN"]` ou `["NUM_9", "NUM_9"]`. Pour demander un état d’alimentation précis, utilisez `turn_on` ou `turn_off` sur le lecteur ou la télécommande.
 
-**Options :**
+## Home Assistant Green et réseau
 
-*   `-t <secondes>`, `--timeout <secondes>` : Spécifie la durée (en secondes) de la recherche réseau.
+La bêta est destinée à Home Assistant OS et Home Assistant Container. Le composant fonctionne dans Home Assistant Core avec les bibliothèques fournies par Core et utilise uniquement le réseau IP. Il ne demande ni accès USB, ni HDMI, ni module complémentaire pour piloter la Box.
 
-    *Exemple (recherche pendant 5 secondes) :*
-    ```bash
-    python scripts/run_discovery.py -t 5
-    ```
+Le test de compatibilité Green a été effectué avec l’image officielle **Home Assistant Core 2026.10.4 ARM64** destinée à ce modèle. Un essai sur un boîtier Green physique reste à faire.
 
-### Script de Contrôle à Distance SFR TV Box
+Le décodeur doit être joignable depuis Home Assistant. Pour plusieurs domiciles, utilisez des routes privées via VPN et des adresses distinctes si des réseaux se recouvrent. Gardez les ports de commande et d’UPnP fermés sur Internet.
 
-Ce projet inclut un utilitaire en ligne de commande pour envoyer des commandes spécifiques à une box SFR. Il est utile pour tester les drivers et contrôler une box directement depuis le terminal.
+## Crédits et licence
 
-**Emplacement :** `scripts/sfr_tv_box_remote.py`
+Cette intégration réutilise le protocole et le mappage des touches documentés par **GehDoc** dans [sfr-tv-box-remote](https://github.com/GehDoc/sfr-tv-box-remote). Le fork conserve la bibliothèque d’origine, son historique et sa [licence MIT](LICENSE), copyright © 2026 GehDoc. Les spécifications techniques d’origine sont disponibles dans [docs/](docs/). Le CLI historique est décrit dans le [README du projet d’origine](https://github.com/GehDoc/sfr-tv-box-remote#readme).
 
-**Utilisation :**
-
-Pour exécuter le script, lancez la commande suivante depuis la racine du répertoire du projet :
-
-```bash
-PYTHONPATH=. python scripts/sfr_tv_box_remote.py --ip <ADRESSE_IP_DE_VOTRE_BOX> <COMMANDE>
-```
-
-**Options Principales :**
-
-*   `--ip <ADRESSE_IP>` : **Requis.** L'adresse IP de la box.
-*   `--port <NUMERO_DE_PORT>` : Le port pour la connexion WebSocket (par défaut : 7682).
-*   `--model <MODELE>` : Le modèle de la box (par défaut : STB8). Modèles supportés actuellement : `STB8`.
-
-**Commandes :**
-
-*   `SEND_KEY <TOUCHE>` : Envoie une pression de touche de télécommande.
-    *   `<TOUCHE>` : Le nom de la touche à presser (par exemple, `POWER`, `HOME`, `NUM_5`). Les touches valides correspondent aux membres de l'énumération `KeyCode` dans `sfr_tv_box_core/constants.py`.
-    *   *Exemple :* `PYTHONPATH=. python scripts/sfr_tv_box_remote.py --ip 192.168.1.133 SEND_KEY POWER`
-
-*   `GET_STATUS` : Obtient le statut actuel de la box.
-    *   *Exemple :* `PYTHONPATH=. python scripts/sfr_tv_box_remote.py --ip 192.168.1.133 GET_STATUS`
-
-*   `GET_VERSIONS` : Obtient les informations de version de la box.
-    *   *Exemple :* `PYTHONPATH=. python scripts/sfr_tv_box_remote.py --ip 192.168.1.133 GET_VERSIONS`
-
-## 5. Documentation du Projet
-
-Pour une analyse approfondie des spécifications du projet, de l'état d'avancement du développement et des structures de commandes détaillées, veuillez vous référer aux documents suivants :
-
-*   **[Spécifications et Roadmap du Projet](PROJECT_SPEC.md)** : Définit l'architecture globale, le backlog fonctionnel et les standards de développement.
-*   **[Avancement du Projet et Prochaines Étapes](PROGRESS.md)** : Suit le statut actuel, les tâches terminées et les phases de développement à venir.
-*   **[Processus de Release et Versioning](docs/RELEASE_PROCESS.md)** : Décrit la stratégie de versioning, le processus de release et la gestion des tags.
-*   **[Documentation Technique (docs/)](docs/)** : Contient les spécifications détaillées pour les commandes, les mécanismes de découverte et d'autres aspects techniques.
-
-    *   [Spécification des Commandes et Payloads](docs/COMMANDS_SPEC.md)
-    *   [Spécification du Protocole de Découverte](docs/DISCOVERY_SPEC.md)
-
-## 6. Configuration de Développement
-
-Pour garantir la qualité et la cohérence du code, ce projet utilise `ruff` pour le linting et le formatage, appliqués par des hooks `pre-commit`.
-
-### A. Installation des Dépendances de Développement
-
-Tout d'abord, assurez-vous que `pip` est installé, puis installez les dépendances de développement :
-
-```bash
-pip install ".[dev]"
-```
-
-### B. Configuration des Hooks Pre-Commit
-
-Une fois les dépendances de développement installées, configurez les hooks `pre-commit` :
-
-```bash
-pre-commit install
-```
-
-Cette commande installera les hooks Git qui exécuteront automatiquement `ruff` (linter et formateur) à chaque fois que vous ferez un commit. Cela permet de détecter les problèmes avant qu'ils ne fassent partie de l'historique des commits.
-
-## 7. Tests
-
-Ce projet utilise `pytest` pour les tests unitaires. Les tests sont situés dans le répertoire `tests/`.
-
-Pour exécuter les tests, assurez-vous d'avoir installé les dépendances nécessaires (`pytest`, `pytest-asyncio`, `websockets`, `zeroconf`).
-
-**Note :** Le préfixe `PYTHONPATH=.` est nécessaire pour que `pytest` puisse trouver le module `sfr_tv_box_core` depuis la racine du projet.
-
-### A. Exécuter tous les tests
-
-Pour exécuter la suite de tests complète :
-
-```bash
-PYTHONPATH=. pytest -v tests/
-```
-
-### B. Exécuter un fichier de test spécifique
-
-Pour exécuter uniquement les tests contenus dans un seul fichier :
-
-```bash
-PYTHONPATH=. pytest -v tests/test_discovery.py
-```
-
-### C. Exécuter un test spécifique
-
-Pour exécuter un seul test par son nom :
-
-```bash
-PYTHONPATH=. pytest -v tests/test_discovery.py::test_discover_single_box_async
-```
+Projet communautaire indépendant de SFR et de Home Assistant.

@@ -1,0 +1,14 @@
+title: SFR Box 8 TV
+views:
+  - title: TV
+    path: tv
+    type: masonry
+    cards:
+      - type: custom:sfr-remote-card
+        entity: media_player.sfr_box_8
+        remote: remote.sfr_box_8
+      - type: custom:sfr-favorites-card
+        entity: media_player.sfr_box_8
+        favorites:
+          - name: Guadeloupe 1ère
+            channel: "5"

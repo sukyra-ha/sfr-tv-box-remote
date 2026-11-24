@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ajouter un décodeur SFR Box 8 TV",
+        "description": "Indiquez l’adresse accessible depuis Home Assistant.",
+        "data": {
+          "name": "Nom",
+          "host": "Adresse IP ou nom DNS",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de lire l’état du décodeur. Vérifiez son adresse, son port et l’accès réseau.",
+      "invalid_host": "Saisissez une adresse IP ou un nom DNS.",
+      "invalid_name": "Saisissez un nom pour le décodeur."
+    },
+    "abort": {
+      "already_configured": "Un décodeur est déjà configuré à cette adresse et à ce port.",
+      "already_in_progress": "Ce décodeur est déjà en cours de configuration."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Chaînes et favoris",
+        "description": "Saisissez une chaîne par ligne. Exemple : 5 ou 5 = Nom de la chaîne.",
+        "data": {
+          "channels": "Chaînes favorites",
+          "upnp_url": "Adresse UPnP pour la chaîne en cours (facultatif)"
+        }
+      }
+    },
+    "error": {
+      "invalid_channels": "Saisissez un numéro de 1 à 4 chiffres par ligne, suivi éventuellement d’un nom. Vérifiez les doublons.",
+      "invalid_upnp_url": "Saisissez l’adresse de contrôle UPnP du décodeur configuré."
+    }
+  }
+}
