@@ -1,10 +1,15 @@
 """Home Assistant integration for SFR Box 8 TV."""
 
+from pathlib import Path
+
+from homeassistant.components import frontend
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import CONF_HOST
 from homeassistant.const import CONF_PORT
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import ConfigType
 
 from .client import BoxClient
 from .const import CONF_UPNP_URL
@@ -14,6 +19,17 @@ from .live_channel import LiveChannelClient
 from .live_channel import validate_control_url
 
 PLATFORMS = (Platform.MEDIA_PLAYER, Platform.REMOTE)
+_CARD_MODULE_URL = "/sfr_box_8_static/cartes-sfr.js"
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Make the bundled cards available in the frontend card picker."""
+    if frontend.DOMAIN in hass.config.components:
+        await hass.http.async_register_static_paths(
+            [StaticPathConfig(_CARD_MODULE_URL, str(Path(__file__).with_name("cartes-sfr.js")), False)]
+        )
+        frontend.add_extra_js_url(hass, _CARD_MODULE_URL)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: BoxConfigEntry) -> bool:

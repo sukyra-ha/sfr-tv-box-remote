@@ -1,5 +1,6 @@
 {
   "domain": "sfr_box_8",
+  "after_dependencies": ["frontend"],
   "name": "SFR Box 8 TV",
   "codeowners": ["@sukyra-ha"],
   "config_flow": true,
@@ -8,5 +9,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/sukyra-ha/sfr-tv-box-remote/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

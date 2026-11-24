@@ -2,7 +2,7 @@
 
 ## Bêta du fork Home Assistant
 
-- Intégration STB8 et cartes TV préparées pour HACS v0.1.0.
+- Intégration STB8 et cartes TV publiées pour HACS. Depuis la v0.1.1, le sélecteur charge les cartes automatiquement.
 - Prochaine validation matérielle sur un Home Assistant Green physique.
 - Les étapes du projet d’origine ci-dessous restent à titre de référence.
 
