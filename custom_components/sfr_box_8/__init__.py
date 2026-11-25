@@ -28,7 +28,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         await hass.http.async_register_static_paths(
             [StaticPathConfig(_CARD_MODULE_URL, str(Path(__file__).with_name("cartes-sfr.js")), False)]
         )
-        frontend.add_extra_js_url(hass, _CARD_MODULE_URL)
+        frontend.add_extra_js_url(hass, f"{_CARD_MODULE_URL}?v=3")
     return True
 
 

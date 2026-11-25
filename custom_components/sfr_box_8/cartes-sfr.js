@@ -330,20 +330,30 @@ class SfrFavoritesEditor extends HTMLElement {
   }
 }
 
-for (const [tag, element] of [
-  ["sfr-remote-card", SfrRemoteCard],
-  ["sfr-favorites-card", SfrFavoritesCard],
-  ["sfr-favorites-editor", SfrFavoritesEditor],
-]) {
-  if (!customElements.get(tag)) customElements.define(tag, element);
-}
+function registerCards() {
+  // Older Home Assistant frontends can replace the custom element registry at startup.
+  if (!customElements.get("home-assistant")) {
+    window.setTimeout(registerCards, 50);
+    return;
+  }
 
-window.customCards = window.customCards || [];
-for (const [type, name, description] of [
-  ["sfr-remote-card", "Télécommande SFR", "Marche, veille, volume, chaînes et pavé numérique."],
-  ["sfr-favorites-card", "Favoris SFR", "Raccourcis de chaînes personnalisables."],
-]) {
-  if (!window.customCards.some((card) => card.type === type)) {
-    window.customCards.push({ type, name, description, preview: true });
+  for (const [tag, element] of [
+    ["sfr-remote-card", SfrRemoteCard],
+    ["sfr-favorites-card", SfrFavoritesCard],
+    ["sfr-favorites-editor", SfrFavoritesEditor],
+  ]) {
+    if (!customElements.get(tag)) customElements.define(tag, element);
+  }
+
+  window.customCards = window.customCards || [];
+  for (const [type, name, description] of [
+    ["sfr-remote-card", "Télécommande SFR", "Marche, veille, volume, chaînes et pavé numérique."],
+    ["sfr-favorites-card", "Favoris SFR", "Raccourcis de chaînes personnalisables."],
+  ]) {
+    if (!window.customCards.some((card) => card.type === type)) {
+      window.customCards.push({ type, name, description, preview: true });
+    }
   }
 }
+
+registerCards();

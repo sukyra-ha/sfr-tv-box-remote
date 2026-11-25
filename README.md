@@ -2,7 +2,7 @@
 
 Intégration communautaire pour piloter un décodeur **SFR Box 8 TV (STB8)** sur le réseau local. Elle crée un lecteur multimédia et une télécommande pour chaque décodeur configuré.
 
-**Bêta publique · v0.1.1** · Home Assistant Core **2026.10.4** ou ultérieur.
+**Bêta publique · v0.1.2** · Home Assistant Core **2026.10.4** ou ultérieur.
 
 ## Fonctionnalités
 
@@ -18,14 +18,14 @@ Les boutons de volume envoient les touches au décodeur. Les réponses vérifié
 
 1. Installez [HACS](https://www.hacs.xyz/docs/use/download/download/) si nécessaire, puis ouvrez **HACS → ⋮ → Dépôts personnalisés**.
 2. Ajoutez `https://github.com/sukyra-ha/sfr-tv-box-remote` avec la catégorie **Intégration**.
-3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.1** si le choix de version apparaît. Redémarrez Home Assistant.
+3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.2** si le choix de version apparaît. Redémarrez Home Assistant.
 4. Dans **Paramètres → Appareils et services → Ajouter une intégration**, choisissez **SFR Box 8 TV**. Saisissez l’adresse IP ou le nom DNS du décodeur, ainsi que le port **7682** par défaut.
 
 Le nom par défaut **SFR Box 8** donne habituellement `media_player.sfr_box_8` et `remote.sfr_box_8`. Vérifiez les identifiants générés avant de réutiliser les exemples. Pour un second décodeur, ajoutez une nouvelle entrée.
 
 ## Installation manuelle
 
-Téléchargez le paquet de la [bêta v0.1.1](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.1). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
+Téléchargez le paquet de la [bêta v0.1.2](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.2). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
 
 ## Afficher la chaîne en direct
 
