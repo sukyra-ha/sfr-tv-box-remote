@@ -2,7 +2,7 @@
 
 Intégration communautaire pour piloter un décodeur **SFR Box 8 TV (STB8)** sur le réseau local. Elle crée un lecteur multimédia et une télécommande pour chaque décodeur configuré.
 
-**Bêta publique · v0.1.3** · Home Assistant Core **2026.10.4** ou ultérieur.
+**Bêta publique · v0.1.4** · Home Assistant Core **2026.10.4** ou ultérieur.
 
 ## Fonctionnalités
 
@@ -18,18 +18,20 @@ Les boutons de volume envoient les touches au décodeur. Les réponses vérifié
 
 1. Installez [HACS](https://www.hacs.xyz/docs/use/download/download/) si nécessaire, puis ouvrez **HACS → ⋮ → Dépôts personnalisés**.
 2. Ajoutez `https://github.com/sukyra-ha/sfr-tv-box-remote` avec la catégorie **Intégration**.
-3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.3** si le choix de version apparaît. Redémarrez Home Assistant.
+3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.4** si le choix de version apparaît. Redémarrez Home Assistant.
 4. Dans **Paramètres → Appareils et services → Ajouter une intégration**, choisissez **SFR Box 8 TV**. Saisissez l’adresse IP ou le nom DNS du décodeur, ainsi que le port **7682** par défaut.
 
 Le nom par défaut **SFR Box 8** donne habituellement `media_player.sfr_box_8` et `remote.sfr_box_8`. Vérifiez les identifiants générés avant de réutiliser les exemples. Pour un second décodeur, ajoutez une nouvelle entrée.
 
 ## Installation manuelle
 
-Téléchargez le paquet de la [bêta v0.1.3](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.3). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
+Téléchargez le paquet de la [bêta v0.1.4](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.4). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
 
 ## Afficher la chaîne en direct
 
-Pour activer cette option, renseignez l’adresse de contrôle UPnP du service `urn:neufboxtv-org:service:Resources:1`, généralement sur le port **49153**.
+Allumez le décodeur et laissez l’adresse UPnP vide dans les options. Home Assistant cherche automatiquement le service sur le réseau et affiche le nom de la chaîne dès qu’un flux en direct est signalé. Les adresses UPnP déjà saisies restent utilisées.
+
+Si Home Assistant ne reçoit pas la découverte SSDP, par exemple dans certains réseaux Docker ou via un VPN, vous pouvez renseigner l’adresse de contrôle du décodeur, généralement sur le port **49153**.
 
 1. Depuis un ordinateur sur le même réseau local que le décodeur, lancez `python3 scripts/trouver_upnp.py 192.0.2.10` avec Python 3.9 ou ultérieur. Remplacez l’adresse d’exemple par l’adresse du décodeur configurée dans Home Assistant. Sur Windows, `py -3` peut remplacer `python3`.
 2. Dans **Paramètres → Appareils et services → SFR Box 8 TV → Configurer**, collez le résultat dans **Adresse UPnP pour la chaîne en cours**.

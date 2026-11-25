@@ -42,7 +42,7 @@ class BoxCoordinator(DataUpdateCoordinator[BoxState]):
         hass: HomeAssistant,
         entry: BoxConfigEntry,
         client: BoxClient,
-        live: LiveChannelClient | None,
+        live: LiveChannelClient,
     ):
         """Schedule refreshes and initialize the decoder command lock."""
         super().__init__(
@@ -65,7 +65,7 @@ class BoxCoordinator(DataUpdateCoordinator[BoxState]):
             except BoxError as err:
                 raise UpdateFailed(str(err)) from err
             channel = None
-            if power and self._live is not None:
+            if power:
                 try:
                     channel = await self._live.read()
                 except BoxError as err:

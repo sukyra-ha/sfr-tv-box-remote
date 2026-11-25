@@ -28,7 +28,7 @@
         "description": "Enter one channel per line, for example 5 or 5 = Channel name.",
         "data": {
           "channels": "Favorite channels",
-          "upnp_url": "UPnP address for the live channel (optional)"
+          "upnp_url": "UPnP address for the live channel (blank = automatic)"
         }
       }
     },

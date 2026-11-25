@@ -28,7 +28,7 @@
         "description": "Saisissez une chaîne par ligne. Exemple : 5 ou 5 = Nom de la chaîne.",
         "data": {
           "channels": "Chaînes favorites",
-          "upnp_url": "Adresse UPnP pour la chaîne en cours (facultatif)"
+          "upnp_url": "Adresse UPnP pour la chaîne en cours (vide = automatique)"
         }
       }
     },

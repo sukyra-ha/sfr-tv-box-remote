@@ -5,6 +5,7 @@ DEFAULT_NAME = "SFR Box 8"
 DEFAULT_PORT = 7682
 CONF_CHANNELS = "channels"
 CONF_UPNP_URL = "upnp_url"
+UPNP_SERVICE = "urn:neufboxtv-org:service:Resources:1"
 DEFAULT_CHANNELS = "\n".join(str(number) for number in range(1, 10))
 
 # STB8 key mapping adapted from GehDoc/sfr-tv-box-remote (MIT).

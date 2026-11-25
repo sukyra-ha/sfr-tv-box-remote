@@ -22,7 +22,7 @@ from .const import DEFAULT_CHANNELS
 from .const import DEFAULT_NAME
 from .const import DEFAULT_PORT
 from .const import DOMAIN
-from .live_channel import validate_control_url
+from .upnp import validate_control_url
 
 _HOST_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
 

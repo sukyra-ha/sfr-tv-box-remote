@@ -16,7 +16,7 @@ from .const import CONF_UPNP_URL
 from .coordinator import BoxConfigEntry
 from .coordinator import BoxCoordinator
 from .live_channel import LiveChannelClient
-from .live_channel import validate_control_url
+from .upnp import validate_control_url
 
 PLATFORMS = (Platform.MEDIA_PLAYER, Platform.REMOTE)
 _CARD_MODULE_URL = "/sfr_box_8_static/cartes-sfr.js"
@@ -38,7 +38,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: BoxConfigEntry) -> bool:
     host = entry.data[CONF_HOST]
     client = BoxClient(session, host, entry.data[CONF_PORT])
     upnp_url = entry.options.get(CONF_UPNP_URL)
-    live = LiveChannelClient(session, validate_control_url(upnp_url, host)) if upnp_url else None
+    manual_url = validate_control_url(upnp_url, host) if upnp_url else None
+    live = LiveChannelClient(hass, session, host, manual_url)
     coordinator = BoxCoordinator(hass, entry, client, live)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
