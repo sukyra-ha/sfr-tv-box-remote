@@ -3,6 +3,18 @@ const REMOTE = "remote.sfr_box_8";
 const FAVORITES = [{ name: "Guadeloupe 1ère", channel: "5" }];
 const CHANNEL = /^[0-9]{1,4}$/;
 
+function sfrEntities(home, domain) {
+  return Object.values(home?.entities ?? {}).filter(
+    (entity) => entity.platform === "sfr_box_8" && entity.entity_id.startsWith(`${domain}.`),
+  );
+}
+
+function playerEntity(home, configured) {
+  if (configured && (configured !== PLAYER || home?.states[configured])) return configured;
+  const players = sfrEntities(home, "media_player");
+  return players.length === 1 ? players[0].entity_id : undefined;
+}
+
 const style = `
   :host { display: block; }
   ha-card { box-sizing: border-box; padding: 20px; }
@@ -57,7 +69,7 @@ class SfrCard extends HTMLElement {
     if (config.entity && !config.entity.startsWith("media_player.")) {
       throw new Error("Choisis une entité media_player.");
     }
-    this.config = { entity: PLAYER, ...config };
+    this.config = config;
     this.render();
     this.update();
   }
@@ -68,7 +80,15 @@ class SfrCard extends HTMLElement {
   }
 
   get player() {
-    return this.home?.states[this.config?.entity];
+    return this.home?.states[this.playerId];
+  }
+
+  get playerId() {
+    return playerEntity(this.home, this.config?.entity);
+  }
+
+  get missingPlayerMessage() {
+    return "Choisis ton décodeur dans les paramètres de la carte.";
   }
 
   get available() {
@@ -113,7 +133,7 @@ class SfrCard extends HTMLElement {
   tune(channel, onSuccess) {
     if (!CHANNEL.test(channel)) return;
     return this.run("media_player", "play_media", {
-      entity_id: this.config.entity,
+      entity_id: this.playerId,
       media_content_type: "channel",
       media_content_id: channel,
     }, `Chaîne ${channel} demandée`, onSuccess);
@@ -122,7 +142,20 @@ class SfrCard extends HTMLElement {
 
 class SfrRemoteCard extends SfrCard {
   static getStubConfig() {
-    return { entity: PLAYER, remote: REMOTE };
+    return {};
+  }
+
+  static getConfigElement() {
+    return document.createElement("sfr-favorites-editor");
+  }
+
+  get remoteId() {
+    const configured = this.config?.remote;
+    const device = this.home?.entities?.[this.playerId]?.device_id;
+    const remotes = sfrEntities(this.home, "remote");
+    if (configured && configured !== REMOTE && this.home?.states[configured]) return configured;
+    if (device) return remotes.find((entity) => entity.device_id === device)?.entity_id;
+    return this.playerId === PLAYER ? configured ?? REMOTE : undefined;
   }
 
   getCardSize() {
@@ -167,12 +200,12 @@ class SfrRemoteCard extends SfrCard {
       event.preventDefault();
       this.tune(this.input.value, () => { this.input.value = ""; });
     });
-    root.querySelector("[data-power]").addEventListener("click", () => {
-      this.run("media_player", this.on ? "turn_off" : "turn_on", { entity_id: this.config.entity });
-    });
+    root.querySelector("[data-power]").addEventListener("click", () =>
+      this.run("media_player", this.on ? "turn_off" : "turn_on", { entity_id: this.playerId }),
+    );
     for (const button of root.querySelectorAll("[data-key]")) {
       button.addEventListener("click", () => this.run("remote", "send_command", {
-        entity_id: this.config.remote ?? REMOTE,
+        entity_id: this.remoteId,
         command: [button.dataset.key],
       }));
     }
@@ -199,9 +232,10 @@ class SfrRemoteCard extends SfrCard {
     power.setAttribute("aria-pressed", String(this.on));
     power.setAttribute("aria-label", this.on ? "Mettre le décodeur en veille" : "Allumer le décodeur");
     power.querySelector("span").textContent = this.on ? "Veille" : "Marche";
-    root.querySelector("[data-state]").textContent = !this.available ? "Décodeur indisponible"
-      : this.on ? (this.player.attributes.media_title || "Décodeur allumé") : "Décodeur en veille";
-    const remote = this.home?.states[this.config.remote ?? REMOTE];
+    root.querySelector("[data-state]").textContent = !this.player ? this.missingPlayerMessage
+      : !this.available ? "Décodeur indisponible"
+        : this.on ? (this.player.attributes.media_title || "Décodeur allumé") : "Décodeur en veille";
+    const remote = this.home?.states[this.remoteId];
     const remoteReady = remote && !["unknown", "unavailable"].includes(remote.state);
     for (const button of root.querySelectorAll("[data-key]")) {
       button.disabled = !this.on || !remoteReady || locked;
@@ -219,7 +253,7 @@ class SfrRemoteCard extends SfrCard {
 
 class SfrFavoritesCard extends SfrCard {
   static getStubConfig() {
-    return { entity: PLAYER, favorites: FAVORITES };
+    return { favorites: FAVORITES };
   }
 
   static getConfigElement() {
@@ -231,7 +265,7 @@ class SfrFavoritesCard extends SfrCard {
   }
 
   render() {
-    this.shell('<h2>Chaînes favorites</h2><div class="favorites"></div>');
+    this.shell('<h2>Chaînes favorites</h2><p data-player-status hidden></p><div class="favorites"></div>');
     const container = this.shadowRoot.querySelector(".favorites");
     const favorites = this.config.favorites ?? FAVORITES;
     if (!favorites.length) {
@@ -253,13 +287,19 @@ class SfrFavoritesCard extends SfrCard {
   }
 
   update() {
+    const status = this.shadowRoot.querySelector("[data-player-status]");
+    if (status) {
+      status.hidden = this.available;
+      status.textContent = !this.player ? this.missingPlayerMessage
+        : this.available ? "" : "Décodeur indisponible";
+    }
     for (const button of this.shadowRoot.querySelectorAll("[data-channel]")) {
       button.disabled = !this.available || Boolean(this.pending) || !CHANNEL.test(button.dataset.channel);
     }
   }
 }
 
-class SfrFavoritesEditor extends HTMLElement {
+class SfrCardEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -274,9 +314,37 @@ class SfrFavoritesEditor extends HTMLElement {
     this.render();
   }
 
+  set hass(home) {
+    const changed = this.home?.entities !== home.entities;
+    this.home = home;
+    if (changed) this.updatePicker();
+  }
+
+  get isRemote() {
+    return this.config.type === "custom:sfr-remote-card";
+  }
+
+  updatePicker() {
+    const picker = this.shadowRoot.querySelector("select");
+    if (!picker) return;
+    const players = sfrEntities(this.home, "media_player");
+    picker.replaceChildren(new Option("Automatique si un seul décodeur", ""));
+    for (const player of players) {
+      const label = this.home.states[player.entity_id]?.attributes.friendly_name ?? player.entity_id;
+      picker.add(new Option(label, player.entity_id));
+    }
+    const configured = this.config.entity;
+    if (configured && !players.some((player) => player.entity_id === configured)) {
+      picker.add(new Option(configured, configured));
+    }
+    picker.value = configured ?? "";
+  }
+
   emitConfig() {
+    const config = { ...this.config };
+    if (!this.isRemote) config.favorites = this.favorites.map((row) => ({ ...row }));
     this.dispatchEvent(new CustomEvent("config-changed", {
-      detail: { config: { ...this.config, favorites: this.favorites.map((row) => ({ ...row })) } },
+      detail: { config },
       bubbles: true,
       composed: true,
     }));
@@ -289,12 +357,23 @@ class SfrFavoritesEditor extends HTMLElement {
         :host { padding: 8px 0; }
         .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(64px, 85px) auto; gap: 8px; align-items: end; margin-bottom: 10px; }
         label { display: grid; gap: 5px; font-size: .9rem; }
-        input { width: 100%; min-height: 44px; border: 1px solid var(--divider-color); border-radius: 8px; padding: 6px 8px; background: var(--card-background-color); color: var(--primary-text-color); }
+        input, select { width: 100%; min-height: 44px; border: 1px solid var(--divider-color); border-radius: 8px; padding: 6px 8px; background: var(--card-background-color); color: var(--primary-text-color); }
+        label.decoder { margin-bottom: 12px; }
         button { min-height: 44px; padding: 0 9px; }
       </style>
-      <div class="rows"></div>
-      <button type="button" class="add">Ajouter un raccourci</button>
+      <label class="decoder">Décodeur<select></select></label>
+      ${this.isRemote ? "" : '<div class="rows"></div><button type="button" class="add">Ajouter un raccourci</button>'}
     `;
+    const picker = this.shadowRoot.querySelector("select");
+    picker.addEventListener("change", () => {
+      this.config = { ...this.config };
+      delete this.config.remote;
+      if (picker.value) this.config.entity = picker.value;
+      else delete this.config.entity;
+      this.emitConfig();
+    });
+    this.updatePicker();
+    if (this.isRemote) return;
     const rows = this.shadowRoot.querySelector(".rows");
     this.favorites.forEach((favorite, index) => {
       const row = document.createElement("div");
@@ -340,7 +419,7 @@ function registerCards() {
   for (const [tag, element] of [
     ["sfr-remote-card", SfrRemoteCard],
     ["sfr-favorites-card", SfrFavoritesCard],
-    ["sfr-favorites-editor", SfrFavoritesEditor],
+    ["sfr-favorites-editor", SfrCardEditor],
   ]) {
     if (!customElements.get(tag)) customElements.define(tag, element);
   }

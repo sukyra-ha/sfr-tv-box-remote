@@ -2,7 +2,7 @@
 
 Intégration communautaire pour piloter un décodeur **SFR Box 8 TV (STB8)** sur le réseau local. Elle crée un lecteur multimédia et une télécommande pour chaque décodeur configuré.
 
-**Bêta publique · v0.1.2** · Home Assistant Core **2026.10.4** ou ultérieur.
+**Bêta publique · v0.1.3** · Home Assistant Core **2026.10.4** ou ultérieur.
 
 ## Fonctionnalités
 
@@ -18,14 +18,14 @@ Les boutons de volume envoient les touches au décodeur. Les réponses vérifié
 
 1. Installez [HACS](https://www.hacs.xyz/docs/use/download/download/) si nécessaire, puis ouvrez **HACS → ⋮ → Dépôts personnalisés**.
 2. Ajoutez `https://github.com/sukyra-ha/sfr-tv-box-remote` avec la catégorie **Intégration**.
-3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.2** si le choix de version apparaît. Redémarrez Home Assistant.
+3. Ouvrez **SFR Box 8 TV** dans HACS, choisissez **Télécharger** et sélectionnez **v0.1.3** si le choix de version apparaît. Redémarrez Home Assistant.
 4. Dans **Paramètres → Appareils et services → Ajouter une intégration**, choisissez **SFR Box 8 TV**. Saisissez l’adresse IP ou le nom DNS du décodeur, ainsi que le port **7682** par défaut.
 
 Le nom par défaut **SFR Box 8** donne habituellement `media_player.sfr_box_8` et `remote.sfr_box_8`. Vérifiez les identifiants générés avant de réutiliser les exemples. Pour un second décodeur, ajoutez une nouvelle entrée.
 
 ## Installation manuelle
 
-Téléchargez le paquet de la [bêta v0.1.2](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.2). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
+Téléchargez le paquet de la [bêta v0.1.3](https://github.com/sukyra-ha/sfr-tv-box-remote/releases/tag/v0.1.3). Copiez `custom_components/sfr_box_8/` dans le dossier `custom_components/` de votre configuration Home Assistant, à côté de `configuration.yaml`. Redémarrez, puis ajoutez l’intégration comme à l’étape 4.
 
 ## Afficher la chaîne en direct
 
@@ -42,7 +42,9 @@ L’intégration charge les cartes automatiquement après l’ajout du décodeur
 
 1. Ouvrez le tableau de bord voulu, puis cliquez sur **Modifier → Ajouter une carte → Par carte**.
 2. Recherchez **SFR** et ajoutez **Télécommande SFR** et **Favoris SFR**. Pour créer un tableau de bord dédié, collez le contenu de [`ui/tv.yaml`](ui/tv.yaml) dans l’éditeur de configuration brute d’un nouveau tableau de bord vierge.
-3. Dans les deux cartes, adaptez `entity` si nécessaire. Dans la télécommande, adaptez aussi `remote`. Modifiez la carte **Chaînes favorites** et choisissez **Ajouter un raccourci** pour associer un nom à un numéro.
+3. Si vous avez plusieurs décodeurs, choisissez **Décodeur** dans l’éditeur de chaque carte. Un décodeur unique est sélectionné automatiquement lorsque la carte ne cible aucune entité. Les commandes de volume et de navigation utilisent la télécommande associée. Dans **Chaînes favorites**, choisissez **Ajouter un raccourci** pour associer un nom à un numéro.
+
+Si une ancienne carte cible un décodeur supprimé, ouvrez son éditeur et sélectionnez le décodeur actuel.
 
 Si vous aviez ajouté la ressource `/local/sfr-tv/cartes-sfr.js?v=2` avec la v0.1.0, vous pouvez la retirer de **Paramètres → Tableaux de bord → Ressources** après la mise à jour.
 
